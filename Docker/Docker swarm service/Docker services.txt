@@ -1,0 +1,79 @@
+- name: Deploy tpcds_tpg service to swarm
+  docker_service:
+    project_name: tpcds-tpg
+    definition:
+      version: '2'
+      services:
+        run_tests: 
+        image: IP:5000/dev/config-registry-microservice-update
+        network
+        env:
+            HOST: "DB"
+            PORT: "5432"
+            USERNAME: "devuser"
+            PASSWORD: "PWD"
+            DB_MS_URL: "http://IP:3045"
+            CLIENT_MSG_BUILDER_URL: "http://IP:3022"
+            MS_PORT: "3043"
+            DBNAME: "core"
+            SCHEMANAME: "core"
+        exposed_ports: 
+        - "3043"
+        ports:
+        - "3043:3043"
+
+
+docker network create --driver=overlay  --subnet=10.11.0.0/16 int-dept-net
+
+- hosts: all
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+- name: Create a network with options
+  docker_network:
+    name: int-ext-network
+    driver_options:
+      com.docker.network.bridge.name: net2
+    ipam_options:
+      subnet: '10.14.0.0/16'
+
+
+- name: Create a network with options
+  docker_network:
+    name: network_two
+    driver_options:
+      com.docker.network.bridge.name: net2
+    ipam_options:
+      subnet: '172.3.26.0/16'
+      gateway: 172.3.26.1
+      iprange: '192.168.1.0/24'
+
+
+
+- hosts: all
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+   - name: Download docker image
+     docker_image:
+        name: IP:5000/dev/config-registry-microservice-update
+        tag: latest
+        source: pull
+   - name: Launching Config Registry
+     docker_container:
+        name: DEV-CONFIG-REGISTRY
+        image: IP:5000/dev/config-registry-microservice-update
+        state: started
+        env:
+            HOST: "DB"
+            PORT: "5432"
+            USERNAME: "devuser"
+            PASSWORD: "PWD"
+            DB_MS_URL: "http://IP:3045"
+            CLIENT_MSG_BUILDER_URL: "http://IP:3022"
+            MS_PORT: "3043"
+            DBNAME: "core"
+            SCHEMANAME: "core"
+        exposed_ports: 
+        - "3043"
+        ports:
+        - "3043:3043"

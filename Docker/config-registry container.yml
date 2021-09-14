@@ -1,0 +1,26 @@
+- hosts: all
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+   - name: Download docker image
+     docker_image:
+        name: s3.sample.reg:5000/dev/config-registry-microservice-update
+        tag: latest
+        source: pull
+   - name: Launching Config Registry
+     docker_container:
+        name: DEV-CONFIG-REGISTRY
+        image: s3.sample.reg:5000/dev/config-registry-microservice-update
+        state: started
+        env:
+            HOST: "DB"
+            PORT: "5432"
+            USERNAME: "USER"
+            PASSWORD: "PWD"
+            MS_PORT: "3043"
+            DBNAME: "core"
+            SCHEMANAME: "core"
+        exposed_ports: 
+        - "3043"
+        ports:
+        - "3043:3043"
